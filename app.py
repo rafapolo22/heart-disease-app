@@ -44,7 +44,7 @@ if option == "1. Predicción Individual":
         oldpeak = st.number_input("Depresión del ST (oldpeak)", value=1.0, step=0.1)
         slope = st.selectbox("Pendiente del ST (slope)", [0,1,2])
         ca = st.selectbox("Vasos principales (ca)", [0,1,2,3])
-        thal = st.selectbox("Thalassemia (thal)", [0,1,2,3])  # Nota: en algunos datasets es 3,6,7 → ajusta si es necesario
+        thal = st.selectbox("Thalassemia (thal)", [0,1,2,3])
 
     if st.button("🔮 Predecir", type="primary"):
         input_data = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg, 
@@ -74,23 +74,24 @@ else:
         df_test = pd.read_csv(uploaded_file)
         st.write("Vista previa de los datos:", df_test.head())
         
-       df_features = df_test.drop(columns=['target'], errors='ignore')
+        df_features = df_test.drop(columns=['target'], errors='ignore')
+        
         for col in ['ca', 'thal']:
             if col in df_features.columns:
                 df_features[col] = pd.to_numeric(df_features[col], errors='coerce')
                 df_features[col] = df_features[col].fillna(df_features[col].mean())
+        
         X_test_scaled = scaler.transform(df_features)
+        
         pred_log = log_model.predict(X_test_scaled)
         pred_nn = nn_model.predict(X_test_scaled)
         
-        # Mostrar resultados
         st.subheader("Resultados Regresión Logística")
         st.write(pd.Series(pred_log, name="Predicción_Log").value_counts())
         
         st.subheader("Resultados Red Neuronal")
         st.write(pd.Series(pred_nn, name="Predicción_NN").value_counts())
         
-        # Si tienes las etiquetas reales (columna 'target'), muestra métricas
         if 'target' in df_test.columns:
             y_true = df_test['target']
             st.subheader("Métricas - Regresión Logística")
@@ -108,4 +109,3 @@ else:
             sns.heatmap(confusion_matrix(y_true, pred_nn), annot=True, fmt='d', cmap='Oranges', ax=ax2)
             ax2.set_title("Matriz de Confusión - Red Neuronal")
             st.pyplot(fig2)
-
