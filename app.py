@@ -74,7 +74,8 @@ else:
         df_test = pd.read_csv(uploaded_file)
         st.write("Vista previa de los datos:", df_test.head())
         
-        X_test_scaled = scaler.transform(df_test)
+        df_features = df_test.drop(columns=['target'], errors='ignore')
+        X_test_scaled = scaler.transform(df_features)
         
         pred_log = log_model.predict(X_test_scaled)
         pred_nn = nn_model.predict(X_test_scaled)
