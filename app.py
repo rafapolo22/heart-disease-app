@@ -51,11 +51,7 @@ option = st.sidebar.radio(
     ["Predicción Individual", "Predicción por Lotes"]
 )
  
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🏆 Accuracy de Modelos")
-st.sidebar.success("✅ Reg. Logística: **85.25%**")
-st.sidebar.warning("🔶 Red Neuronal: **81.97%**")
- 
+
 # ================= HEADER =================
 st.title("🫀 Sistema Inteligente de Predicción Cardíaca")
 st.markdown("### Análisis basado en Machine Learning")
