@@ -51,7 +51,6 @@ option = st.sidebar.radio(
     ["Predicción Individual", "Predicción por Lotes"]
 )
  
-
 # ================= HEADER =================
 st.title("🫀 Sistema Inteligente de Predicción Cardíaca")
 st.markdown("### Análisis basado en Machine Learning")
@@ -91,44 +90,57 @@ if option == "Predicción Individual":
  
     st.markdown("---")
  
-    # Botón centrado
     col_btn = st.columns([2,1,2])
     with col_btn[1]:
         analizar = st.button("🔮 Analizar Riesgo")
  
     if analizar:
-        with st.spinner("Analizando datos..."):
-            input_data = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg,
-                                        thalach, exang, oldpeak, slope, ca, thal]],
-                                      columns=['age','sex','cp','trestbps','chol','fbs','restecg',
-                                               'thalach','exang','oldpeak','slope','ca','thal'])
-            input_scaled = scaler.transform(input_data)
+        errores = []
+        if trestbps < 80 or trestbps > 250:
+            errores.append("⚠️ Presión arterial debe estar entre 80 y 250.")
+        if chol < 100 or chol > 600:
+            errores.append("⚠️ Colesterol debe estar entre 100 y 600.")
+        if thalach < 60 or thalach > 250:
+            errores.append("⚠️ Frecuencia cardíaca debe estar entre 60 y 250.")
+        if oldpeak < 0.0 or oldpeak > 10.0:
+            errores.append("⚠️ Depresión del ST debe estar entre 0.0 y 10.0.")
  
-            if modelo_seleccionado == "Regresión Logística":
-                pred = log_model.predict(input_scaled)[0]
-                prob = log_model.predict_proba(input_scaled)[0][1]
-            elif modelo_seleccionado == "Red Neuronal (MLP)":
-                pred = nn_model.predict(input_scaled)[0]
-                prob = nn_model.predict_proba(input_scaled)[0][1]
-            else:
-                prob_log = log_model.predict_proba(input_scaled)[0][1]
-                prob_nn = nn_model.predict_proba(input_scaled)[0][1]
-                prob = (prob_log + prob_nn) / 2
-                pred = int(prob > 0.5)
+        if errores:
+            for e in errores:
+                st.error(e)
+        else:
+            with st.spinner("Analizando datos..."):
+                input_data = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg,
+                                            thalach, exang, oldpeak, slope, ca, thal]],
+                                          columns=['age','sex','cp','trestbps','chol','fbs','restecg',
+                                                   'thalach','exang','oldpeak','slope','ca','thal'])
+                input_scaled = scaler.transform(input_data)
  
-        st.subheader("📊 Resultado")
-        col1, col2 = st.columns(2)
+                if modelo_seleccionado == "Regresión Logística":
+                    pred = log_model.predict(input_scaled)[0]
+                    prob = log_model.predict_proba(input_scaled)[0][1]
+                elif modelo_seleccionado == "Red Neuronal (MLP)":
+                    pred = nn_model.predict(input_scaled)[0]
+                    prob = nn_model.predict_proba(input_scaled)[0][1]
+                else:
+                    prob_log = log_model.predict_proba(input_scaled)[0][1]
+                    prob_nn = nn_model.predict_proba(input_scaled)[0][1]
+                    prob = (prob_log + prob_nn) / 2
+                    pred = int(prob > 0.5)
  
-        with col1:
-            st.metric("Probabilidad de Enfermedad", f"{prob:.2%}")
+            st.subheader("📊 Resultado")
+            col1, col2 = st.columns(2)
  
-        with col2:
-            if pred == 1:
-                st.error("⚠️ Alto Riesgo Cardíaco")
-            else:
-                st.success("✅ Bajo Riesgo Cardíaco")
+            with col1:
+                st.metric("Probabilidad de Enfermedad", f"{prob:.2%}")
  
-        st.progress(int(prob * 100))
+            with col2:
+                if pred == 1:
+                    st.error("⚠️ Alto Riesgo Cardíaco")
+                else:
+                    st.success("✅ Bajo Riesgo Cardíaco")
+ 
+            st.progress(int(prob * 100))
  
 # ================= LOTES =================
 else:
