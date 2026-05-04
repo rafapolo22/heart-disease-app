@@ -214,3 +214,7 @@ else:
                 ax.set_xlabel("Predicho")
                 ax.set_ylabel("Real")
                 st.pyplot(fig)
+                
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: gray;'>Desarrollado por Rafael Polo Henao | Universidad Cooperativa de Colombia | 2026</p>", unsafe_allow_html=True)
+
