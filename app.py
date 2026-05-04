@@ -142,7 +142,6 @@ if option == "Predicción Individual":
 
             st.progress(int(prob * 100))
 
-            # Mostrar las dos clases claramente
             st.markdown("---")
             st.markdown("#### 🏷️ Clases del modelo")
             c1, c2 = st.columns(2)
@@ -164,16 +163,15 @@ else:
         st.dataframe(df.head(), use_container_width=True)
         st.caption(f"Total de registros: {len(df)}")
 
-        # Convertir target a binario si tiene más de 2 clases
         if 'target' in df.columns:
             df['target'] = df['target'].apply(lambda x: 1 if x > 0 else 0)
 
-        X = df.drop(columns=['target'], errors='ignore')
+        X = df.drop(columns=['target'], errors='ignore').copy()
 
-        for col in ['ca', 'thal']:
-            if col in X.columns:
-                X[col] = pd.to_numeric(X[col], errors='coerce')
-                X[col] = X[col].fillna(X[col].mean())
+        for col in X.columns:
+            X[col] = pd.to_numeric(X[col], errors='coerce')
+
+        X = X.fillna(X.mean())
 
         X_scaled = scaler.transform(X)
 
@@ -188,7 +186,6 @@ else:
             st.markdown(f"#### 📊 Resultados - {nombre}")
             pred = modelo.predict(X_scaled)
 
-            # Mostrar las dos clases claramente
             st.markdown("#### 🏷️ Clases del modelo")
             c1, c2 = st.columns(2)
             with c1:
