@@ -5,14 +5,14 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
 import matplotlib.pyplot as plt
- 
+
 # ================= CONFIGURACIÓN =================
 st.set_page_config(
     page_title="Predicción Cardíaca",
     page_icon="🫀",
     layout="wide"
 )
- 
+
 # ================= ESTILO PERSONALIZADO =================
 st.markdown("""
 <style>
@@ -28,7 +28,7 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
- 
+
 # ================= CARGAR MODELOS =================
 @st.cache_resource
 def load_models():
@@ -36,32 +36,32 @@ def load_models():
     nn_model = joblib.load('nn_heart.pkl')
     scaler = joblib.load('scaler_heart.pkl')
     return log_model, nn_model, scaler
- 
+
 log_model, nn_model, scaler = load_models()
- 
+
 # ================= SIDEBAR =================
 st.sidebar.title("⚙️ Configuración")
 modelo_seleccionado = st.sidebar.selectbox(
     "Selecciona modelo",
     ["Regresión Logística", "Red Neuronal (MLP)", "Ambos"]
 )
- 
+
 option = st.sidebar.radio(
     "Modo de uso",
     ["Predicción Individual", "Predicción por Lotes"]
 )
- 
+
 # ================= HEADER =================
 st.title("🫀 Sistema Inteligente de Predicción Cardíaca")
 st.markdown("### Análisis basado en Machine Learning")
- 
+
 # ================= INDIVIDUAL =================
 if option == "Predicción Individual":
- 
+
     st.subheader("📋 Datos del Paciente")
- 
+
     col1, col2, col3 = st.columns(3)
- 
+
     with col1:
         st.markdown("**👤 Datos Personales**")
         age = st.number_input("Edad", 20, 80, 50)
@@ -69,7 +69,7 @@ if option == "Predicción Individual":
         cp = st.selectbox("Dolor de pecho (cp)", [0,1,2,3],
             format_func=lambda x: {0:"Angina típica", 1:"Angina atípica", 2:"No anginoso", 3:"Asintomático"}[x])
         fbs = st.selectbox("Azúcar en sangre >120", [0,1], format_func=lambda x: "No" if x==0 else "Sí")
- 
+
     with col2:
         st.markdown("**🩺 Datos Clínicos**")
         trestbps = st.number_input("Presión arterial (trestbps)", 80, 250, 120)
@@ -77,7 +77,7 @@ if option == "Predicción Individual":
         restecg = st.selectbox("Electrocardiograma (restecg)", [0,1,2],
             format_func=lambda x: {0:"Normal", 1:"Anomalía ST-T", 2:"Hipertrofia"}[x])
         exang = st.selectbox("Angina por ejercicio", [0,1], format_func=lambda x: "No" if x==0 else "Sí")
- 
+
     with col3:
         st.markdown("**❤️ Datos Cardíacos**")
         thalach = st.number_input("Frecuencia cardíaca máx.", 60, 250, 150)
@@ -87,13 +87,13 @@ if option == "Predicción Individual":
         ca = st.selectbox("Vasos principales (ca)", [0,1,2,3])
         thal = st.selectbox("Thalassemia (thal)", [0,1,2,3],
             format_func=lambda x: {0:"Normal", 1:"Defecto fijo", 2:"Reversible", 3:"Sin info"}[x])
- 
+
     st.markdown("---")
- 
+
     col_btn = st.columns([2,1,2])
     with col_btn[1]:
         analizar = st.button("🔮 Analizar Riesgo")
- 
+
     if analizar:
         errores = []
         if trestbps < 80 or trestbps > 250:
@@ -104,7 +104,7 @@ if option == "Predicción Individual":
             errores.append("⚠️ Frecuencia cardíaca debe estar entre 60 y 250.")
         if oldpeak < 0.0 or oldpeak > 10.0:
             errores.append("⚠️ Depresión del ST debe estar entre 0.0 y 10.0.")
- 
+
         if errores:
             for e in errores:
                 st.error(e)
@@ -115,7 +115,7 @@ if option == "Predicción Individual":
                                           columns=['age','sex','cp','trestbps','chol','fbs','restecg',
                                                    'thalach','exang','oldpeak','slope','ca','thal'])
                 input_scaled = scaler.transform(input_data)
- 
+
                 if modelo_seleccionado == "Regresión Logística":
                     pred = log_model.predict(input_scaled)[0]
                     prob = log_model.predict_proba(input_scaled)[0][1]
@@ -127,67 +127,92 @@ if option == "Predicción Individual":
                     prob_nn = nn_model.predict_proba(input_scaled)[0][1]
                     prob = (prob_log + prob_nn) / 2
                     pred = int(prob > 0.5)
- 
+
             st.subheader("📊 Resultado")
             col1, col2 = st.columns(2)
- 
+
             with col1:
                 st.metric("Probabilidad de Enfermedad", f"{prob:.2%}")
- 
+
             with col2:
                 if pred == 1:
-                    st.error("⚠️ Alto Riesgo Cardíaco")
+                    st.error("⚠️ Alto Riesgo Cardíaco — Clase 1: Con Enfermedad")
                 else:
-                    st.success("✅ Bajo Riesgo Cardíaco")
- 
+                    st.success("✅ Bajo Riesgo Cardíaco — Clase 0: Sin Enfermedad")
+
             st.progress(int(prob * 100))
- 
+
+            # Mostrar las dos clases claramente
+            st.markdown("---")
+            st.markdown("#### 🏷️ Clases del modelo")
+            c1, c2 = st.columns(2)
+            with c1:
+                st.info("**Clase 0** — Sin Enfermedad Cardíaca")
+            with c2:
+                st.warning("**Clase 1** — Con Enfermedad Cardíaca")
+
 # ================= LOTES =================
 else:
     st.subheader("📂 Carga de Datos por Lotes")
     st.info("📌 El CSV debe tener las columnas del dataset Cleveland. Puede incluir 'target' para ver métricas.")
- 
+
     uploaded_file = st.file_uploader("Sube tu CSV (hasta 200MB)", type=["csv"])
- 
+
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.markdown("#### 👀 Vista previa")
         st.dataframe(df.head(), use_container_width=True)
         st.caption(f"Total de registros: {len(df)}")
- 
+
+        # Convertir target a binario si tiene más de 2 clases
+        if 'target' in df.columns:
+            df['target'] = df['target'].apply(lambda x: 1 if x > 0 else 0)
+
         X = df.drop(columns=['target'], errors='ignore')
- 
+
         for col in ['ca', 'thal']:
             if col in X.columns:
                 X[col] = pd.to_numeric(X[col], errors='coerce')
                 X[col] = X[col].fillna(X[col].mean())
- 
+
         X_scaled = scaler.transform(X)
- 
+
         modelos = []
         if modelo_seleccionado in ["Regresión Logística", "Ambos"]:
             modelos.append(("Regresión Logística", log_model, "Blues"))
         if modelo_seleccionado in ["Red Neuronal (MLP)", "Ambos"]:
             modelos.append(("Red Neuronal (MLP)", nn_model, "Oranges"))
- 
+
         for nombre, modelo, cmap in modelos:
             st.markdown("---")
             st.markdown(f"#### 📊 Resultados - {nombre}")
             pred = modelo.predict(X_scaled)
- 
+
+            # Mostrar las dos clases claramente
+            st.markdown("#### 🏷️ Clases del modelo")
+            c1, c2 = st.columns(2)
+            with c1:
+                st.info("**Clase 0** — Sin Enfermedad Cardíaca")
+            with c2:
+                st.warning("**Clase 1** — Con Enfermedad Cardíaca")
+
             r1, r2 = st.columns(2)
             with r1:
-                conteo = pd.Series(pred).value_counts().rename({0: "Sin enfermedad", 1: "Con enfermedad"})
+                conteo = pd.Series(pred).value_counts().rename({0: "Sin enfermedad (0)", 1: "Con enfermedad (1)"})
                 st.bar_chart(conteo)
             with r2:
                 if 'target' in df.columns:
                     st.markdown("**Reporte de Clasificación:**")
-                    st.text(classification_report(df['target'], pred))
- 
+                    st.text(classification_report(df['target'], pred,
+                        target_names=["Sin Enfermedad (0)", "Con Enfermedad (1)"]))
+
             if 'target' in df.columns:
                 fig, ax = plt.subplots(figsize=(5, 3))
-                sns.heatmap(confusion_matrix(df['target'], pred),
-                            annot=True, fmt='d', cmap=cmap, ax=ax, linewidths=0.5)
+                cm = confusion_matrix(df['target'], pred, labels=[0, 1])
+                sns.heatmap(cm, annot=True, fmt='d', cmap=cmap, ax=ax,
+                            linewidths=0.5,
+                            xticklabels=["Sin Enfermedad (0)", "Con Enfermedad (1)"],
+                            yticklabels=["Sin Enfermedad (0)", "Con Enfermedad (1)"])
                 ax.set_title(f"Matriz de Confusión - {nombre}", fontsize=11)
                 ax.set_xlabel("Predicho")
                 ax.set_ylabel("Real")
