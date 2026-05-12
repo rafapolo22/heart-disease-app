@@ -19,8 +19,17 @@ st.markdown("""
 .main {
     background-color: #0E1117;
 }
+
 .stButton>button {
     background-color: #FF4B4B;
+    color: white;
+    border-radius: 10px;
+    height: 3em;
+    width: 100%;
+}
+
+.stDownloadButton>button {
+    background-color: #00C853;
     color: white;
     border-radius: 10px;
     height: 3em;
@@ -41,6 +50,7 @@ log_model, nn_model, scaler = load_models()
 
 # ================= SIDEBAR =================
 st.sidebar.title("⚙️ Configuración")
+
 modelo_seleccionado = st.sidebar.selectbox(
     "Selecciona modelo",
     ["Regresión Logística", "Red Neuronal (MLP)", "Ambos"]
@@ -55,86 +65,233 @@ option = st.sidebar.radio(
 st.title("🫀 Sistema Inteligente de Predicción Cardíaca")
 st.markdown("### Análisis basado en Machine Learning")
 
-# ================= INDIVIDUAL =================
+# =========================================================
+# ================= PREDICCIÓN INDIVIDUAL =================
+# =========================================================
 if option == "Predicción Individual":
 
     st.subheader("📋 Datos del Paciente")
 
     col1, col2, col3 = st.columns(3)
 
+    # ================= COLUMNA 1 =================
     with col1:
         st.markdown("**👤 Datos Personales**")
-        age = st.number_input("Edad", 20, 80, 50)
-        sex = st.selectbox("Sexo", [0,1], format_func=lambda x: "Mujer" if x==0 else "Hombre")
-        cp = st.selectbox("Dolor de pecho (cp)", [0,1,2,3],
-            format_func=lambda x: {0:"Angina típica", 1:"Angina atípica", 2:"No anginoso", 3:"Asintomático"}[x])
-        fbs = st.selectbox("Azúcar en sangre >120", [0,1], format_func=lambda x: "No" if x==0 else "Sí")
 
+        age = st.number_input(
+            "Edad",
+            min_value=20,
+            max_value=80,
+            value=50,
+            step=1
+        )
+
+        sex = st.selectbox(
+            "Sexo",
+            [0, 1],
+            format_func=lambda x: "Mujer" if x == 0 else "Hombre"
+        )
+
+        cp = st.selectbox(
+            "Dolor de pecho (cp)",
+            [0, 1, 2, 3],
+            format_func=lambda x: {
+                0: "Angina típica",
+                1: "Angina atípica",
+                2: "No anginoso",
+                3: "Asintomático"
+            }[x]
+        )
+
+        fbs = st.selectbox(
+            "Azúcar en sangre >120",
+            [0, 1],
+            format_func=lambda x: "No" if x == 0 else "Sí"
+        )
+
+    # ================= COLUMNA 2 =================
     with col2:
         st.markdown("**🩺 Datos Clínicos**")
-        trestbps = st.number_input("Presión arterial (trestbps)", 80, 250, 120)
-        chol = st.number_input("Colesterol (chol)", 100, 600, 200)
-        restecg = st.selectbox("Electrocardiograma (restecg)", [0,1,2],
-            format_func=lambda x: {0:"Normal", 1:"Anomalía ST-T", 2:"Hipertrofia"}[x])
-        exang = st.selectbox("Angina por ejercicio", [0,1], format_func=lambda x: "No" if x==0 else "Sí")
 
+        trestbps = st.number_input(
+            "Presión arterial (trestbps)",
+            min_value=80,
+            max_value=250,
+            value=120,
+            step=1
+        )
+
+        chol = st.number_input(
+            "Colesterol (chol)",
+            min_value=100,
+            max_value=600,
+            value=200,
+            step=1
+        )
+
+        restecg = st.selectbox(
+            "Electrocardiograma (restecg)",
+            [0, 1, 2],
+            format_func=lambda x: {
+                0: "Normal",
+                1: "Anomalía ST-T",
+                2: "Hipertrofia"
+            }[x]
+        )
+
+        exang = st.selectbox(
+            "Angina por ejercicio",
+            [0, 1],
+            format_func=lambda x: "No" if x == 0 else "Sí"
+        )
+
+    # ================= COLUMNA 3 =================
     with col3:
         st.markdown("**❤️ Datos Cardíacos**")
-        thalach = st.number_input("Frecuencia cardíaca máx.", 60, 250, 150)
-        oldpeak = st.number_input("Depresión ST (oldpeak)", 0.0, 10.0, 1.0, step=0.1)
-        slope = st.selectbox("Pendiente ST (slope)", [0,1,2],
-            format_func=lambda x: {0:"Ascendente", 1:"Plana", 2:"Descendente"}[x])
-        ca = st.selectbox("Vasos principales (ca)", [0,1,2,3])
-        thal = st.selectbox("Thalassemia (thal)", [0,1,2,3],
-            format_func=lambda x: {0:"Normal", 1:"Defecto fijo", 2:"Reversible", 3:"Sin info"}[x])
+
+        thalach = st.number_input(
+            "Frecuencia cardíaca máx.",
+            min_value=60,
+            max_value=250,
+            value=150,
+            step=1
+        )
+
+        oldpeak = st.number_input(
+            "Depresión ST (oldpeak)",
+            min_value=0.0,
+            max_value=10.0,
+            value=1.0,
+            step=0.1
+        )
+
+        slope = st.selectbox(
+            "Pendiente ST (slope)",
+            [0, 1, 2],
+            format_func=lambda x: {
+                0: "Ascendente",
+                1: "Plana",
+                2: "Descendente"
+            }[x]
+        )
+
+        ca = st.selectbox(
+            "Vasos principales (ca)",
+            [0, 1, 2, 3]
+        )
+
+        thal = st.selectbox(
+            "Thalassemia (thal)",
+            [0, 1, 2, 3],
+            format_func=lambda x: {
+                0: "Normal",
+                1: "Defecto fijo",
+                2: "Reversible",
+                3: "Sin info"
+            }[x]
+        )
 
     st.markdown("---")
 
-    col_btn = st.columns([2,1,2])
+    # ================= BOTÓN =================
+    col_btn = st.columns([2, 1, 2])
+
     with col_btn[1]:
         analizar = st.button("🔮 Analizar Riesgo")
 
+    # ================= PREDICCIÓN =================
     if analizar:
+
         errores = []
+
         if trestbps < 80 or trestbps > 250:
             errores.append("⚠️ Presión arterial debe estar entre 80 y 250.")
+
         if chol < 100 or chol > 600:
             errores.append("⚠️ Colesterol debe estar entre 100 y 600.")
+
         if thalach < 60 or thalach > 250:
             errores.append("⚠️ Frecuencia cardíaca debe estar entre 60 y 250.")
+
         if oldpeak < 0.0 or oldpeak > 10.0:
-            errores.append("⚠️ Depresión del ST debe estar entre 0.0 y 10.0.")
+            errores.append("⚠️ Depresión ST debe estar entre 0.0 y 10.0.")
 
         if errores:
+
             for e in errores:
                 st.error(e)
+
         else:
+
             with st.spinner("Analizando datos..."):
-                input_data = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg,
-                                            thalach, exang, oldpeak, slope, ca, thal]],
-                                          columns=['age','sex','cp','trestbps','chol','fbs','restecg',
-                                                   'thalach','exang','oldpeak','slope','ca','thal'])
+
+                input_data = pd.DataFrame(
+                    [[
+                        age,
+                        sex,
+                        cp,
+                        trestbps,
+                        chol,
+                        fbs,
+                        restecg,
+                        thalach,
+                        exang,
+                        oldpeak,
+                        slope,
+                        ca,
+                        thal
+                    ]],
+                    columns=[
+                        'age',
+                        'sex',
+                        'cp',
+                        'trestbps',
+                        'chol',
+                        'fbs',
+                        'restecg',
+                        'thalach',
+                        'exang',
+                        'oldpeak',
+                        'slope',
+                        'ca',
+                        'thal'
+                    ]
+                )
+
                 input_scaled = scaler.transform(input_data)
 
+                # ================= MODELOS =================
                 if modelo_seleccionado == "Regresión Logística":
+
                     pred = log_model.predict(input_scaled)[0]
                     prob = log_model.predict_proba(input_scaled)[0][1]
+
                 elif modelo_seleccionado == "Red Neuronal (MLP)":
+
                     pred = nn_model.predict(input_scaled)[0]
                     prob = nn_model.predict_proba(input_scaled)[0][1]
+
                 else:
+
                     prob_log = log_model.predict_proba(input_scaled)[0][1]
                     prob_nn = nn_model.predict_proba(input_scaled)[0][1]
+
                     prob = (prob_log + prob_nn) / 2
                     pred = int(prob > 0.5)
 
+            # ================= RESULTADOS =================
             st.subheader("📊 Resultado")
-            col1, col2 = st.columns(2)
 
-            with col1:
-                st.metric("Probabilidad de Enfermedad", f"{prob:.2%}")
+            r1, r2 = st.columns(2)
 
-            with col2:
+            with r1:
+                st.metric(
+                    "Probabilidad de Enfermedad",
+                    f"{prob:.2%}"
+                )
+
+            with r2:
+
                 if pred == 1:
                     st.error("⚠️ Alto Riesgo Cardíaco — Clase 1: Con Enfermedad")
                 else:
@@ -142,107 +299,210 @@ if option == "Predicción Individual":
 
             st.progress(int(prob * 100))
 
-            st.markdown("---")
-            st.markdown("#### 🏷️ Clases del modelo")
             # ================= REPORTE DESCARGABLE =================
-resultado_df = pd.DataFrame({
-    "Edad": [age],
-    "Sexo": ["Hombre" if sex == 1 else "Mujer"],
-    "Probabilidad": [f"{prob:.2%}"],
-    "Predicción": ["Con Enfermedad" if pred == 1 else "Sin Enfermedad"]
-})
+            resultado_df = pd.DataFrame({
+                "Edad": [age],
+                "Sexo": ["Hombre" if sex == 1 else "Mujer"],
+                "Probabilidad": [f"{prob:.2%}"],
+                "Predicción": [
+                    "Con Enfermedad"
+                    if pred == 1
+                    else "Sin Enfermedad"
+                ]
+            })
 
-csv = resultado_df.to_csv(index=False).encode('utf-8')
+            csv = resultado_df.to_csv(index=False).encode('utf-8')
 
-st.download_button(
-    label="📥 Descargar Reporte CSV",
-    data=csv,
-    file_name="reporte_prediccion_cardiaca.csv",
-    mime="text/csv"
-)
+            st.download_button(
+                label="📥 Descargar Reporte CSV",
+                data=csv,
+                file_name="reporte_prediccion_cardiaca.csv",
+                mime="text/csv"
+            )
+
+            st.markdown("---")
+
+            st.markdown("#### 🏷️ Clases del modelo")
+
             c1, c2 = st.columns(2)
+
             with c1:
                 st.info("**Clase 0** — Sin Enfermedad Cardíaca")
+
             with c2:
                 st.warning("**Clase 1** — Con Enfermedad Cardíaca")
 
-# ================= LOTES =================
+# =========================================================
+# ================= PREDICCIÓN POR LOTES ==================
+# =========================================================
 else:
-    st.subheader("📂 Carga de Datos por Lotes")
-    st.info("📌 El CSV debe tener las columnas del dataset Cleveland. Puede incluir 'target' para ver métricas.")
 
-    uploaded_file = st.file_uploader("Sube tu CSV (hasta 200MB)", type=["csv"])
+    st.subheader("📂 Carga de Datos por Lotes")
+
+    st.info(
+        "📌 El CSV debe tener las columnas del dataset Cleveland. "
+        "Puede incluir 'target' para ver métricas."
+    )
+
+    uploaded_file = st.file_uploader(
+        "Sube tu CSV (hasta 200MB)",
+        type=["csv"]
+    )
 
     if uploaded_file:
+
         df = pd.read_csv(uploaded_file)
+
         st.markdown("#### 👀 Vista previa")
         st.dataframe(df.head(), use_container_width=True)
+
         st.caption(f"Total de registros: {len(df)}")
 
+        # ================= TARGET =================
         if 'target' in df.columns:
-            df['target'] = df['target'].apply(lambda x: 1 if x > 0 else 0)
+            df['target'] = df['target'].apply(
+                lambda x: 1 if x > 0 else 0
+            )
 
+        # ================= FEATURES =================
         X = df.drop(columns=['target'], errors='ignore').copy()
 
+        # ================= LIMPIEZA =================
         for col in X.columns:
             X[col] = pd.to_numeric(X[col], errors='coerce')
 
         X = X.fillna(X.mean())
 
+        # ================= ESCALADO =================
         X_scaled = scaler.transform(X)
 
+        # ================= MODELOS =================
         modelos = []
-        if modelo_seleccionado in ["Regresión Logística", "Ambos"]:
-            modelos.append(("Regresión Logística", log_model, "Blues"))
-        if modelo_seleccionado in ["Red Neuronal (MLP)", "Ambos"]:
-            modelos.append(("Red Neuronal (MLP)", nn_model, "Oranges"))
 
+        if modelo_seleccionado in ["Regresión Logística", "Ambos"]:
+            modelos.append((
+                "Regresión Logística",
+                log_model,
+                "Blues"
+            ))
+
+        if modelo_seleccionado in ["Red Neuronal (MLP)", "Ambos"]:
+            modelos.append((
+                "Red Neuronal (MLP)",
+                nn_model,
+                "Oranges"
+            ))
+
+        # ================= RESULTADOS =================
         for nombre, modelo, cmap in modelos:
+
             st.markdown("---")
             st.markdown(f"#### 📊 Resultados - {nombre}")
+
             pred = modelo.predict(X_scaled)
-            # ================= EXPORTAR RESULTADOS =================
-resultado_lotes = X.copy()
-resultado_lotes["Prediccion"] = pred
 
-csv_lotes = resultado_lotes.to_csv(index=False).encode('utf-8')
+            # ================= DESCARGAR RESULTADOS =================
+            resultado_lotes = X.copy()
+            resultado_lotes["Prediccion"] = pred
 
-st.download_button(
-    label=f"📥 Descargar Resultados - {nombre}",
-    data=csv_lotes,
-    file_name=f"resultados_{nombre}.csv",
-    mime="text/csv"
-)
+            csv_lotes = resultado_lotes.to_csv(index=False).encode('utf-8')
 
+            st.download_button(
+                label=f"📥 Descargar Resultados - {nombre}",
+                data=csv_lotes,
+                file_name=f"resultados_{nombre}.csv",
+                mime="text/csv"
+            )
+
+            # ================= CLASES =================
             st.markdown("#### 🏷️ Clases del modelo")
+
             c1, c2 = st.columns(2)
+
             with c1:
                 st.info("**Clase 0** — Sin Enfermedad Cardíaca")
+
             with c2:
                 st.warning("**Clase 1** — Con Enfermedad Cardíaca")
 
+            # ================= GRÁFICOS =================
             r1, r2 = st.columns(2)
-            with r1:
-                conteo = pd.Series(pred).value_counts().rename({0: "Sin enfermedad (0)", 1: "Con enfermedad (1)"})
-                st.bar_chart(conteo)
-            with r2:
-                if 'target' in df.columns:
-                    st.markdown("**Reporte de Clasificación:**")
-                    st.text(classification_report(df['target'], pred,
-                        target_names=["Sin Enfermedad (0)", "Con Enfermedad (1)"]))
 
+            with r1:
+
+                conteo = pd.Series(pred).value_counts()
+
+                conteo = conteo.rename({
+                    0: "Sin enfermedad (0)",
+                    1: "Con enfermedad (1)"
+                })
+
+                st.bar_chart(conteo)
+
+            with r2:
+
+                if 'target' in df.columns:
+
+                    st.markdown("**Reporte de Clasificación:**")
+
+                    st.text(
+                        classification_report(
+                            df['target'],
+                            pred,
+                            target_names=[
+                                "Sin Enfermedad (0)",
+                                "Con Enfermedad (1)"
+                            ]
+                        )
+                    )
+
+            # ================= MATRIZ DE CONFUSIÓN =================
             if 'target' in df.columns:
+
                 fig, ax = plt.subplots(figsize=(5, 3))
-                cm = confusion_matrix(df['target'], pred, labels=[0, 1])
-                sns.heatmap(cm, annot=True, fmt='d', cmap=cmap, ax=ax,
-                            linewidths=0.5,
-                            xticklabels=["Sin Enfermedad (0)", "Con Enfermedad (1)"],
-                            yticklabels=["Sin Enfermedad (0)", "Con Enfermedad (1)"])
-                ax.set_title(f"Matriz de Confusión - {nombre}", fontsize=11)
+
+                cm = confusion_matrix(
+                    df['target'],
+                    pred,
+                    labels=[0, 1]
+                )
+
+                sns.heatmap(
+                    cm,
+                    annot=True,
+                    fmt='d',
+                    cmap=cmap,
+                    ax=ax,
+                    linewidths=0.5,
+                    xticklabels=[
+                        "Sin Enfermedad (0)",
+                        "Con Enfermedad (1)"
+                    ],
+                    yticklabels=[
+                        "Sin Enfermedad (0)",
+                        "Con Enfermedad (1)"
+                    ]
+                )
+
+                ax.set_title(
+                    f"Matriz de Confusión - {nombre}",
+                    fontsize=11
+                )
+
                 ax.set_xlabel("Predicho")
                 ax.set_ylabel("Real")
-                st.pyplot(fig)
-                
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: gray;'>Desarrollado por Rafael Polo Henao | Universidad Cooperativa de Colombia | 2026</p>", unsafe_allow_html=True)
 
+                st.pyplot(fig)
+
+# ================= FOOTER =================
+st.markdown("---")
+
+st.markdown(
+    """
+    <p style='text-align: center; color: gray;'>
+    Desarrollado por Rafael Polo Henao |
+    Universidad Cooperativa de Colombia | 2026
+    </p>
+    """,
+    unsafe_allow_html=True
+)
