@@ -144,6 +144,22 @@ if option == "Predicción Individual":
 
             st.markdown("---")
             st.markdown("#### 🏷️ Clases del modelo")
+            # ================= REPORTE DESCARGABLE =================
+resultado_df = pd.DataFrame({
+    "Edad": [age],
+    "Sexo": ["Hombre" if sex == 1 else "Mujer"],
+    "Probabilidad": [f"{prob:.2%}"],
+    "Predicción": ["Con Enfermedad" if pred == 1 else "Sin Enfermedad"]
+})
+
+csv = resultado_df.to_csv(index=False).encode('utf-8')
+
+st.download_button(
+    label="📥 Descargar Reporte CSV",
+    data=csv,
+    file_name="reporte_prediccion_cardiaca.csv",
+    mime="text/csv"
+)
             c1, c2 = st.columns(2)
             with c1:
                 st.info("**Clase 0** — Sin Enfermedad Cardíaca")
@@ -185,6 +201,18 @@ else:
             st.markdown("---")
             st.markdown(f"#### 📊 Resultados - {nombre}")
             pred = modelo.predict(X_scaled)
+            # ================= EXPORTAR RESULTADOS =================
+resultado_lotes = X.copy()
+resultado_lotes["Prediccion"] = pred
+
+csv_lotes = resultado_lotes.to_csv(index=False).encode('utf-8')
+
+st.download_button(
+    label=f"📥 Descargar Resultados - {nombre}",
+    data=csv_lotes,
+    file_name=f"resultados_{nombre}.csv",
+    mime="text/csv"
+)
 
             st.markdown("#### 🏷️ Clases del modelo")
             c1, c2 = st.columns(2)
